@@ -1,0 +1,7 @@
+{
+  "name": "AddMathAI",
+  "description": "An AI-powered educational application for Malaysian Additional Mathematics students, featuring photo-based problem solving, step-by-step solutions, and progress tracking.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
