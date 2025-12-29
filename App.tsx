@@ -9,14 +9,16 @@ import {
   Menu, 
   X,
   User as UserIcon,
-  ShieldAlert
+  ShieldAlert,
+  Gem
 } from 'lucide-react';
 import { User, AppState, UserRole } from './types';
-import { getAppState, saveAppState, clearAuth } from './services/storage';
+import { getAppState, saveAppState, clearAuth, updateUser } from './services/storage';
 import { Dashboard } from './components/Dashboard';
 import { ProblemSolver } from './components/ProblemSolver';
 import { FeedbackForm } from './components/FeedbackForm';
 import { AdminPanel } from './components/AdminPanel';
+import { PremiumFeatures } from './components/PremiumFeatures'; // Import new component
 import { Button } from './components/Button';
 
 // Auth Screen Component
@@ -42,6 +44,7 @@ const AuthScreen: React.FC<{ onAuth: (user: User) => void }> = ({ onAuth }) => {
       age: parseInt(age) || 17,
       role: role,
       joinedAt: new Date().toISOString(),
+      isPremium: false, // Default to non-premium
     };
 
     onAuth(newUser);
@@ -122,7 +125,7 @@ const AuthScreen: React.FC<{ onAuth: (user: User) => void }> = ({ onAuth }) => {
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(getAppState());
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'solve' | 'feedback' | 'admin'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'solve' | 'feedback' | 'admin' | 'premium'>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -136,7 +139,12 @@ const App: React.FC = () => {
   const handleLogout = () => {
     clearAuth();
     setState({ ...state, currentUser: null });
-    setActiveTab('dashboard');
+    setActiveTab('dashboard'); // Reset tab on logout
+  };
+
+  const handleUserUpdate = (userId: string, updates: Partial<User>) => {
+    updateUser(userId, updates); // Update in storage
+    setState(getAppState()); // Refresh state from storage
   };
 
   const refreshData = () => {
@@ -183,6 +191,7 @@ const App: React.FC = () => {
         <nav className="flex-1 space-y-2">
           <NavItem id="dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
           <NavItem id="solve" icon={<Calculator size={20} />} label="Solve Problem" />
+          <NavItem id="premium" icon={<Gem size={20} />} label="Premium" /> {/* New Premium Nav Item */}
           <NavItem id="feedback" icon={<MessageCircle size={20} />} label="Feedback" />
           {isAdmin && <NavItem id="admin" icon={<ShieldAlert size={20} />} label="Admin Panel" />}
           {!isAdmin && <NavItem id="admin" icon={<ShieldAlert size={20} />} label="Admin Only" disabled />}
@@ -220,6 +229,7 @@ const App: React.FC = () => {
         <nav className="flex-1 space-y-2">
           <NavItem id="dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
           <NavItem id="solve" icon={<Calculator size={20} />} label="Solve Problem" />
+          <NavItem id="premium" icon={<Gem size={20} />} label="Premium" /> {/* New Premium Nav Item */}
           <NavItem id="feedback" icon={<MessageCircle size={20} />} label="Feedback" />
           {isAdmin && <NavItem id="admin" icon={<ShieldAlert size={20} />} label="Admin Panel" />}
         </nav>
@@ -246,8 +256,9 @@ const App: React.FC = () => {
 
         {/* Dynamic Content */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl mx-auto w-full">
-          {activeTab === 'dashboard' && <Dashboard user={state.currentUser} problems={state.problems} />}
+          {activeTab === 'dashboard' && <Dashboard user={state.currentUser} problems={state.problems} onNavigate={setActiveTab} />}
           {activeTab === 'solve' && <ProblemSolver user={state.currentUser} onSuccess={refreshData} />}
+          {activeTab === 'premium' && <PremiumFeatures user={state.currentUser} onUserUpdate={handleUserUpdate} onNavigate={setActiveTab} />} {/* Render PremiumFeatures */}
           {activeTab === 'feedback' && <FeedbackForm user={state.currentUser} />}
           {activeTab === 'admin' && isAdmin && <AdminPanel appState={state} />}
           
@@ -281,6 +292,13 @@ const App: React.FC = () => {
               <Calculator size={24} />
             </div>
             <span className="text-[10px] font-bold">Solve</span>
+          </button>
+          <button 
+            onClick={() => setActiveTab('premium')} // Mobile Premium Nav Item
+            className={`flex flex-col items-center gap-1 ${activeTab === 'premium' ? 'text-blue-600' : 'text-gray-400'}`}
+          >
+            <Gem size={20} />
+            <span className="text-[10px] font-bold">Premium</span>
           </button>
           <button 
             onClick={() => setActiveTab('feedback')}

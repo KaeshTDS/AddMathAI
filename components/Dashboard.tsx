@@ -1,16 +1,18 @@
 
 import React from 'react';
 // Added FileText to the import list
-import { BookOpen, CheckCircle, Clock, TrendingUp, History, FileText } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, TrendingUp, History, FileText, Gem } from 'lucide-react';
 import { User, MathProblem } from '../types';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Button } from './Button';
 
 interface DashboardProps {
   user: User;
   problems: MathProblem[];
+  onNavigate: (tab: string) => void; // Added for navigation
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ user, problems }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ user, problems, onNavigate }) => {
   // Simple stats calculation
   const totalSolved = problems.length;
   const recentProblems = problems.slice(0, 5);
@@ -33,7 +35,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, problems }) => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Selamat Kembali, {user.name}!</h1>
-          <p className="text-gray-500">Track your progress and conquer Additional Mathematics.</p>
+          <p className="text-gray-500 flex items-center gap-2">
+            Track your progress and conquer Additional Mathematics.
+            {user.isPremium && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <Gem size={12} className="mr-1" /> Premium Member
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex gap-2 text-sm text-gray-400 bg-white px-3 py-1.5 rounded-full border border-gray-100 w-fit">
           <Clock size={16} /> Joined {new Date(user.joinedAt).toLocaleDateString()}
@@ -125,6 +134,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, problems }) => {
           </div>
         </div>
       </div>
+
+      {!user.isPremium && (
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 mt-8">
+          <div>
+            <h3 className="text-xl font-bold mb-2">Unlock Unlimited Potential with Premium!</h3>
+            <p className="text-blue-100 text-sm">Get unlimited problem solves, faster AI processing, and more.</p>
+          </div>
+          <Button variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => onNavigate('premium')}>
+            <Gem size={18} className="mr-2" /> Go Premium
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

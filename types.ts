@@ -11,6 +11,7 @@ export interface User {
   age: number;
   role: UserRole;
   joinedAt: string;
+  isPremium: boolean; // Added for Billplz integration
 }
 
 export interface MathProblem {

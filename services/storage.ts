@@ -12,7 +12,12 @@ export const getAppState = (): AppState => {
       feedbacks: [],
     };
   }
-  return JSON.parse(data);
+  const parsedState: AppState = JSON.parse(data);
+  // Ensure isPremium exists on currentUser for backward compatibility
+  if (parsedState.currentUser && parsedState.currentUser.isPremium === undefined) {
+    parsedState.currentUser.isPremium = false;
+  }
+  return parsedState;
 };
 
 export const saveAppState = (state: AppState) => {
@@ -35,4 +40,13 @@ export const addFeedback = (feedback: Feedback) => {
   const state = getAppState();
   state.feedbacks.unshift(feedback);
   saveAppState(state);
+};
+
+// New function to update user properties
+export const updateUser = (userId: string, updates: Partial<User>) => {
+  const state = getAppState();
+  if (state.currentUser && state.currentUser.userId === userId) {
+    state.currentUser = { ...state.currentUser, ...updates };
+    saveAppState(state);
+  }
 };
